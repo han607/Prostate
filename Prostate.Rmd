@@ -1,0 +1,116 @@
+---
+title: "Prostate_Challenge"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(dplyr)
+library(lubridate)
+library(RCurl)
+library(tidyverse)
+
+#Training Data
+Core_Training <- read.csv('CoreTable_training.csv')
+Lab_Training <- read.csv('LabValue_training.csv')
+Lesion_Training <- read.csv('LesionMeasure_training.csv')
+MedHistory_Training <- read.csv('MedHistory_training.csv')
+PriorMed_Training <- read.csv('PriorMed_training.csv')
+VitalSign_Training <- read.csv('VitalSign_training.csv')
+
+#Leaderboard Data
+Core_Leaderboard <- read.csv('CoreTable_leaderboard.csv')
+Lab_Leaderboard <- read.csv('LabValue_leaderboard.csv')
+Lesion_Leaderboard <- read.csv('LesionMeasure_leaderboard.csv')
+MedHistory_Leaderboard <- read.csv('MedHistory_leaderboard.csv')
+PriorMed_Leaderboard <- read.csv('PriorMed_leaderboard.csv')
+VitalSign_Leaderboard <- read.csv('VitalSign_leaderboard.csv')
+```
+
+```{r}
+Core_Training
+#Age Breakdown
+Age_Breakdown <- Core_Training %>% count(AGEGRP2, sort = TRUE)
+Age_Breakdown
+ggplot(data = Age_Breakdown, aes(x=AGEGRP2, y = n)) +
+         geom_bar(stat = "identity")
+
+#Race Breakdown
+Race_Breakdown <- Core_Training %>% count(RACE_C, sort = TRUE)
+Race_Breakdown
+ggplot(data = Race_Breakdown, aes(x=RACE_C, y = n)) +
+         geom_bar(stat = "identity")
+
+#Death Breakdown
+Core_Training$DEATH <- sub("", "NO", Core_Training$DEATH)
+Core_Training$DEATH <- sub("NOYES", "YES", Core_Training$DEATH)
+Death_Breakdown <- Core_Training %>% count(DEATH, sort = TRUE)
+Death_Breakdown
+ggplot(data = Death_Breakdown, aes(x=DEATH, y = n)) +
+         geom_bar(stat = "identity")
+
+#Gleason Score (only ascent 2)
+Core_Training_Ascent <- Core_Training %>% filter(STUDYID == 'ASCENT2')
+Gleason_Breakdown <- Core_Training_Ascent %>% count(GLEAS_DX, sort = TRUE)
+Gleason_Breakdown
+ggplot(data = Gleason_Breakdown, aes(x=GLEAS_DX, y = n)) +
+         geom_bar(stat = "identity")
+
+#Tumor Staging (only ascent 2)
+Staging_Breakdown <- Core_Training_Ascent %>% count(TSTAG_DX, sort = TRUE)
+Staging_Breakdown
+ggplot(data = Staging_Breakdown, aes(x=TSTAG_DX, y = n)) +
+         geom_bar(stat = "identity")
+```
+
+
+
+```{r}
+#Variables vs Death
+#PSA, ALP, ALT, AST, CA, CREACLCA, HB, NEU, PLT, TBILI, TESTO, WBC, MG, PHOS, ALB, RBC, LYM, BUN, GLU
+
+#plot those variables vs YES/NO death
+Core_Training$DEATH <- as.factor(Core_Training$DEATH)
+Core_Training$PSA <- as.numeric(Core_Training$PSA)
+Core_Training$ALP <- as.numeric(Core_Training$ALP)
+Core_Training$ALT <- as.numeric(Core_Training$ALT)
+Core_Training$AST <- as.numeric(Core_Training$AST)
+Core_Training$CA <- as.numeric(Core_Training$CA)
+Core_Training$CREACLCA <- as.numeric(Core_Training$CREACLCA)
+Core_Training$HB <- as.numeric(Core_Training$HB)
+Core_Training$NEU <- as.numeric(Core_Training$NEU)
+Core_Training$PLT <- as.numeric(Core_Training$PLT)
+Core_Training$TBILI <- as.numeric(Core_Training$TBILI)
+Core_Training$TESTO <- as.numeric(Core_Training$TESTO)
+Core_Training$WBC <- as.numeric(Core_Training$WBC)
+Core_Training$MG <- as.numeric(Core_Training$MG)
+Core_Training$PHOS <- as.numeric(Core_Training$PHOS)
+Core_Training$ALB <- as.numeric(Core_Training$ALB)
+Core_Training$RBC <- as.numeric(Core_Training$RBC)
+Core_Training$LYM <- as.numeric(Core_Training$LYM)
+Core_Training$BUN <- as.numeric(Core_Training$BUN)
+Core_Training$GLU <- as.numeric(Core_Training$GLU)
+
+str(Core_Training$DEATH)
+
+DeathLinearMod <- glm(LKADT_P ~ PSA + ALP + ALT + AST + CA + CREACLCA + HB + NEU + PLT + TBILI + TESTO + WBC + MG + PHOS + ALB + RBC + LYM + BUN +
+                        GLU, family = gaussian(link = 'identity'), data = Core_Training[Core_Training$DEATH=="YES",])
+summary(DeathLinearMod)
+
+```
+
+
+
+```{r}
+
+PSA vs DEATH
+
+```
+
+
+
+
